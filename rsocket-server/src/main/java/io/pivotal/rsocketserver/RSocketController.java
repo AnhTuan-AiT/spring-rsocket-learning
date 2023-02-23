@@ -129,6 +129,26 @@ public class RSocketController {
                .map(index -> new Message(SERVER, STREAM, index));
    }
 
+      /**
+    * This @MessageMapping is intended to be used "stream <--> stream" style.
+    * The incoming stream contains the interval settings (in seconds) for the outgoing stream of messages.
+    *
+    * @param settings
+    * @return
+    */
+   
+   @MessageMapping("channel")
+   Flux<Message> channel(final Flux<Duration> settings) {
+       log.info("Received channel request...");
+
+
+       return settings
+               .doOnNext(setting -> log.info("Channel frequency setting is {} second(s).", setting.getSeconds()))
+               .doOnCancel(() -> log.warn("The client cancelled the channel."))
+               .switchMap(setting -> Flux.interval(setting)
+                       .map(index -> new Message(SERVER, CHANNEL, index)));
+   }
+
 //    /**
 //     * This @MessageMapping is intended to be used "fire --> forget" style.
 //     * When a new CommandRequest is received, nothing is returned (void)
