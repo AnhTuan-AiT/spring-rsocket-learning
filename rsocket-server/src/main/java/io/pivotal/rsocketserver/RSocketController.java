@@ -1,22 +1,19 @@
 package io.pivotal.rsocketserver;
 
-import io.pivotal.rsocketserver.data.Message;
-import lombok.extern.slf4j.Slf4j;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.annotation.PreDestroy;
+
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.annotation.ConnectMapping;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import javax.annotation.PreDestroy;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.List;
+import io.pivotal.rsocketserver.data.Message;
+import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Mono;
 
 @Slf4j
 @Controller
@@ -95,6 +92,20 @@ public class RSocketController {
         // create a single Message and return it
         return Mono.just(new Message(SERVER, RESPONSE));
     }
+
+    /**
+    * This @MessageMapping is intended to be used "fire --> forget" style.
+    * When a new CommandRequest is received, nothing is returned (void)
+    *
+    * @param request
+    * @return
+    */
+   @MessageMapping("fire-and-forget")
+   public Mono<Void> fireAndForget(final Message request) {
+       log.info("Received fire-and-forget request: {}", request);
+      
+       return Mono.empty();
+   }
 
 //    /**
 //     * This @MessageMapping is intended to be used "fire --> forget" style.

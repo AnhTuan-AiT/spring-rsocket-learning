@@ -1,29 +1,24 @@
 package io.pivotal.rsocketclient;
 
 
-import io.pivotal.rsocketclient.data.Message;
-import io.rsocket.SocketAcceptor;
-import io.rsocket.metadata.WellKnownMimeType;
-import lombok.extern.slf4j.Slf4j;
+import java.time.Duration;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
-import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
-import org.springframework.security.rsocket.metadata.SimpleAuthenticationEncoder;
-import org.springframework.security.rsocket.metadata.UsernamePasswordMetadata;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
+
+import io.pivotal.rsocketclient.data.Message;
+import io.rsocket.metadata.WellKnownMimeType;
+import lombok.extern.slf4j.Slf4j;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
-
-import javax.annotation.PreDestroy;
-import java.time.Duration;
-import java.util.UUID;
 
 @Slf4j
 @ShellComponent
@@ -111,6 +106,16 @@ public class RSocketShellClient {
                 .retrieveMono(Message.class)
                 .block();
         log.info("\nResponse was: {}", message);
+    }
+
+    @ShellMethod("Send one request. No response will be returned.")
+    public void fireAndForget() throws InterruptedException {
+            log.info("\nFire-And-Forget. Sending one request. Expect no response (check server console log)...");
+            this.rsocketRequester
+                    .route("fire-and-forget")
+                    .data(new Message(CLIENT, FIRE_AND_FORGET))
+                    .send()
+                    .block();
     }
 
     // @ShellMethod("Send one request. No response will be returned.")
