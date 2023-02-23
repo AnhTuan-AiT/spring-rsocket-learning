@@ -35,7 +35,7 @@ public class RSocketController {
         log.info("Shutting down.");
     }
 
-    @ConnectMapping("shell-client")
+    @ConnectMapping("shell-client") // listen to client connection events as they happen
     void connectShellClientAndAskForTelemetry(RSocketRequester requester,
                                               @Payload String client) {
 

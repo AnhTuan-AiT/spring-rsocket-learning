@@ -9,12 +9,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.rsocket.RSocketRequester;
 import org.springframework.messaging.rsocket.RSocketStrategies;
+import org.springframework.messaging.rsocket.annotation.support.RSocketMessageHandler;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.util.MimeType;
 import org.springframework.util.MimeTypeUtils;
 
 import io.pivotal.rsocketclient.data.Message;
+import io.rsocket.SocketAcceptor;
 import io.rsocket.metadata.WellKnownMimeType;
 import lombok.extern.slf4j.Slf4j;
 import reactor.core.Disposable;
@@ -40,9 +42,28 @@ public class RSocketShellClient {
     @Autowired
     public RSocketShellClient(RSocketRequester.Builder builder,
                               @Qualifier("rSocketStrategies") RSocketStrategies strategies) {
-        this.rsocketRequesterBuilder = builder;
-        this.rsocketRequester = rsocketRequesterBuilder.connectTcp("localhost", 7000).block();
-        this.rsocketStrategies = strategies;
+        // (1)
+        String client = UUID.randomUUID().toString();
+        log.info("Connecting using client ID: {}", client);
+        
+        // (2)
+        SocketAcceptor responder = RSocketMessageHandler.responder(strategies, new ClientHandler());
+        
+        // (3) 
+        this.rsocketRequester = builder
+        .setupRoute("shell-client")
+        .setupData(client)
+        .rsocketStrategies(strategies)
+        .rsocketConnector(connector -> connector.acceptor(responder))
+        .connectTcp("localhost", 7000)
+        .block();
+        
+        // (4)
+        this.rsocketRequester.rsocket()
+        .onClose()
+        .doOnError(error -> log.warn("Connection CLOSED"))
+        .doFinally(consumer -> log.info("Client DISCONNECTED"))
+        .subscribe();
     }
 
     // @ShellMethod("Login with your username and password.")
@@ -215,6 +236,9 @@ public class RSocketShellClient {
     // }
 }
 
+/*
+ * Server calling client 
+ */
 @Slf4j
 class ClientHandler {
 
