@@ -1,5 +1,6 @@
 package io.pivotal.rsocketserver;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Controller;
 
 import io.pivotal.rsocketserver.data.Message;
 import lombok.extern.slf4j.Slf4j;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Slf4j
@@ -105,6 +107,26 @@ public class RSocketController {
        log.info("Received fire-and-forget request: {}", request);
       
        return Mono.empty();
+   }
+
+      /**
+    * This @MessageMapping is intended to be used "subscribe --> stream" style.
+    * When a new request command is received, a new stream of events is started and returned to the client.
+    *
+    * @param request
+    * @return
+    */
+  
+   @MessageMapping("stream")
+   Flux<Message> stream(final Message request) {
+       log.info("Received stream request: {}", request);
+      
+
+       return Flux
+               // create a new indexed Flux emitting one element every second
+               .interval(Duration.ofSeconds(1))
+               // create a Flux of new Messages using the indexed Flux
+               .map(index -> new Message(SERVER, STREAM, index));
    }
 
 //    /**

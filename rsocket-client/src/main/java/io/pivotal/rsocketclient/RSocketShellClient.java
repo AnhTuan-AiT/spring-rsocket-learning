@@ -117,6 +117,27 @@ public class RSocketShellClient {
                     .send()
                     .block();
     }
+    
+    @ShellMethod("Send one request. Many responses (stream) will be printed.")
+    public void stream() {
+       
+            log.info("\n\n**** Request-Stream\n**** Send one request.\n**** Log responses.\n**** Type 's' to stop.");
+            disposable = this.rsocketRequester
+                    .route("stream")
+                    .data(new Message(CLIENT, STREAM))
+                    .retrieveFlux(Message.class)
+                    .subscribe(message -> log.info("Response: {} \n(Type 's' to stop.)", message));
+        
+    }
+
+    @ShellMethod("Stops Streams or Channels.")
+    public void s() {
+        if (null != disposable) {
+            log.info("Stopping the current stream.");
+            disposable.dispose();
+            log.info("Stream stopped.");
+        }
+    }
 
     // @ShellMethod("Send one request. No response will be returned.")
     // public void fireAndForget() throws InterruptedException {
