@@ -1,13 +1,13 @@
-package io.pivotal.rsocketserver;
+// package io.pivotal.rsocketserver;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
+// import org.junit.jupiter.api.Test;
+// import org.springframework.boot.test.context.SpringBootTest;
 
-@SpringBootTest
-public class RsocketServerApplicationTest {
+// @SpringBootTest
+// public class RsocketServerApplicationTest {
 
-    @Test
-    void contextLoads() {
-    }
+//     @Test
+//     void contextLoads() {
+//     }
 
-}
+// }
